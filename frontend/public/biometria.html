@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Saturometro Precision PRO - Wrist Mode</title>
+    <style>
+        :root { --primary: #00ffcc; --bg: #0a0a0a; --card: #151515; --text: #eeeeee; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #container { background: var(--card); padding: 30px; border-radius: 40px; width: 85%; max-width: 340px; text-align: center; border: 1px solid #222; box-shadow: 0 20px 50px rgba(0,0,0,0.8); transition: all 0.5s ease; }
+        .completed { border-color: var(--primary); box-shadow: 0 0 30px rgba(0,255,204,0.2); }
+        #status { color: var(--primary); font-size: 0.8rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase; }
+        video { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #333; margin-bottom: 15px; }
+        #bpm { font-size: 6rem; font-weight: 900; color: var(--primary); margin: 0; line-height: 1; letter-spacing: -3px; }
+        .unit { color: var(--primary); font-size: 1rem; margin-bottom: 25px; opacity: 0.7; }
+        #progress-container { width: 100%; height: 8px; background: #222; border-radius: 4px; margin-bottom: 25px; overflow: hidden; }
+        #progress-bar { width: 0%; height: 100%; background: var(--primary); transition: width 0.3s ease; }
+        canvas#graph { width: 100%; height: 70px; background: #080808; border-radius: 15px; margin-bottom: 25px; border: 1px solid #222; }
+        button { width: 100%; padding: 20px; font-size: 1.1rem; border: none; background: var(--primary); color: #000; border-radius: 20px; font-weight: 800; cursor: pointer; }
+        .debug-log { position: fixed; bottom: 5px; left: 5px; right: 5px; background: rgba(0,0,0,0.8); color: #0f0; font-size: 8px; font-family: monospace; padding: 4px; border-radius: 4px; max-height: 60px; overflow-y: auto; z-index: 9999; display: none; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="status">Pronto</div>
+        <video id="video" autoplay playsinline></video>
+        <div id="bpm">--</div>
+        <div class="unit">BPM</div>
+        <div id="progress-container"><div id="progress-bar"></div></div>
+        <canvas id="graph"></canvas>
+        <button id="btn" onclick="toggle()">INIZIA TEST</button>
+    </div>
+    <div id="debug-log" class="debug-log"></div>
+
+<script>
+const video = document.getElementById("video");
+const bpmEl = document.getElementById("bpm");
+const statusEl = document.getElementById("status");
+const btnEl = document.getElementById("btn");
+const gCanvas = document.getElementById("graph");
+const progressBar = document.getElementById("progress-bar");
+const container = document.getElementById("container");
+const gCtx = gCanvas.getContext("2d");
+
+let stream, running = false, isStable = false;
+let signalBuffer = [], bpmHistory = [], lastTime = performance.now(), stabilityCount = 0, lastValidBPM = 0;
+let frameCount = 0;
+let currentStableBpm = 0;
+
+const BUFFER_SIZE = 280, STABILITY_REQUIRED = 80;
+
+function debugLog(msg) {
+    console.log("[BIOMETRIA]", msg);
+    const debugDiv = document.getElementById("debug-log");
+    if (debugDiv) {
+        const time = new Date().toLocaleTimeString();
+        debugDiv.innerHTML += `<div>${time} - ${msg}</div>`;
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+        while (debugDiv.children.length > 20) {
+            debugDiv.removeChild(debugDiv.firstChild);
+        }
+    }
+}
+
+function releaseCamera() {
+    debugLog("releaseCamera() chiamata");
+    if (stream) { 
+        stream.getTracks().forEach(track => track.stop()); 
+        stream = null;
+        debugLog("Camera stream fermato");
+    }
+    if (video) { 
+        video.srcObject = null; 
+        video.pause(); 
+    }
+    if (window.opener) {
+        debugLog("Invio CAMERA_RELEASED al parent");
+        window.opener.postMessage({ type: 'CAMERA_RELEASED' }, window.location.origin);
+        debugLog("Invio BPM_STOP al parent");
+        window.opener.postMessage({ type: 'BPM_STOP' }, window.location.origin);
+    } else {
+        debugLog("window.opener non disponibile!");
+    }
+}
+
+document.addEventListener('visibilitychange', () => { 
+    if (document.hidden && running) { 
+        debugLog("Pagina nascosta, interruzione");
+        releaseCamera(); 
+        running = false; 
+        statusEl.innerText = "Interrotto"; 
+    } 
+});
+
+async function toggle() {
+    debugLog("toggle() chiamato, running=" + running + ", isStable=" + isStable);
+    if (running || isStable) { 
+        debugLog("Riavvio: rilascio camera e reload");
+        releaseCamera(); 
+        location.reload(); 
+        return; 
+    }
+    try {
+        statusEl.innerText = "Sincronizzazione...";
+        debugLog("Richiesta accesso camera...");
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 128, height: 128 } });
+        video.srcObject = stream;
+        const track = stream.getVideoTracks()[0];
+        debugLog("Camera ottenuta, track: " + track.label);
+        try { 
+            await track.applyConstraints({ advanced: [{ torch: true }] }); 
+            debugLog("Torch attivato");
+        } catch(e) { debugLog("Torch non supportato: " + e.message); }
+        running = true;
+        btnEl.innerText = "ANNULLA";
+        
+        debugLog("Invio BPM_START al parent");
+        if (window.opener) {
+            window.opener.postMessage({ type: 'BPM_START' }, window.location.origin);
+            debugLog("BPM_START inviato con successo");
+        } else {
+            debugLog("ATTENZIONE: window.opener null");
+        }
+        
+        frameCount = 0;
+        currentStableBpm = 0;
+        requestAnimationFrame(loop);
+    } catch (err) { 
+        debugLog("ERRORE CAMERA: " + err.message);
+        statusEl.innerText = "ERRORE CAMERA"; 
+    }
+}
+
+function loop() {
+    if (!running || isStable) return;
+    
+    const now = performance.now();
+    const fps = 1000 / (now - lastTime);
+    lastTime = now;
+    frameCount++;
+
+    if (frameCount % 2 === 0) {
+        const vCanvas = document.createElement("canvas");
+        vCanvas.width = 20; 
+        vCanvas.height = 20;
+        const ctx = vCanvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, 20, 20);
+        const pixels = ctx.getImageData(0, 0, 20, 20).data;
+
+        let rSum = 0, gSum = 0;
+        for (let i = 0; i < pixels.length; i += 4) { 
+            rSum += pixels[i]; 
+            gSum += pixels[i + 1]; 
+        }
+        let r = rSum / 400, g = gSum / 400;
+
+        if (frameCount % 100 === 0) {
+            debugLog(`Frame ${frameCount} - R:${Math.round(r)} G:${Math.round(g)}`);
+        }
+
+        if (r < 25) {
+            if (frameCount % 50 === 0) debugLog("Inquadra il polso - segnale debole");
+            statusEl.innerText = "Inquadra il polso";
+            resetData();
+            requestAnimationFrame(loop);
+            return;
+        }
+
+        let rawValue = (g * 0.85) + (r * 0.15);
+        signalBuffer.push(rawValue);
+        if (signalBuffer.length > BUFFER_SIZE) signalBuffer.shift();
+
+        if (signalBuffer.length > 120) {
+            statusEl.innerText = "Misurazione...";
+            const avg = signalBuffer.reduce((a,b) => a+b) / signalBuffer.length;
+            const centered = rawValue - avg;
+
+            if (signalBuffer.length % 5 === 0) {
+                const dftInput = signalBuffer.length >= BUFFER_SIZE
+                    ? signalBuffer.map(v => v - avg)
+                    : signalBuffer.slice(-200).map(v => v - (signalBuffer.slice(-200).reduce((a,b) => a+b) / Math.min(signalBuffer.length, 200)));
+                let b = computeBPM_DFT(dftInput, fps);
+                if (b > 45 && b < 170) {
+                    bpmHistory.push(b);
+                    if (bpmHistory.length > 40) bpmHistory.shift();
+                    // checkStability aggiorna display soccorritore E invia BPM al medico
+                    // nello stesso momento — nessun invio anticipato nel loop
+                    checkStability(b, centered, avg);
+                }
+            }
+
+            // Invia solo il segnale grezzo (centered) senza BPM —
+            // il BPM viene inviato esclusivamente da checkStability,
+            // nello stesso istante in cui appare sul display del soccorritore
+            if (window.opener) {
+                window.opener.postMessage({ 
+                    type: 'BPM_SIGNAL', 
+                    value: centered,
+                    bpmIst: null
+                }, window.location.origin);
+            }
+
+            drawGraph(signalBuffer.map(v => v - avg));
+
+        } else {
+            if (frameCount % 100 === 0) {
+                debugLog(`Acquisizione segnale: ${signalBuffer.length}/${BUFFER_SIZE}`);
+            }
+        }
+    }
+    
+    requestAnimationFrame(loop);
+}
+
+function computeBPM_DFT(signal, fps) {
+    const N = signal.length;
+    if (N < 50) return 0;
+    
+    let windowed = signal.map((v, i) => v * (0.54 - 0.46 * Math.cos(2 * Math.PI * i / (N - 1))));
+    let maxAmp = 0, bestFreq = 0;
+    
+    const minK = Math.floor(0.8 * N / fps);
+    const maxK = Math.ceil(2.8 * N / fps);
+    
+    for (let k = minK; k < maxK; k++) {
+        let re = 0, im = 0;
+        for (let n = 0; n < N; n++) {
+            re += windowed[n] * Math.cos(2 * Math.PI * k * n / N);
+            im -= windowed[n] * Math.sin(2 * Math.PI * k * n / N);
+        }
+        let amp = re*re + im*im;
+        if (amp > maxAmp) { 
+            maxAmp = amp; 
+            bestFreq = k; 
+        }
+    }
+    
+    const bpm = (bestFreq * fps / N) * 60;
+    return Math.round(bpm);
+}
+
+// checkStability riceve anche centered e avg per poter inviare
+// il segnale corretto al medico nello stesso momento del display
+function checkStability(currentBPM, centered, avg) {
+    if (bpmHistory.length < 20) return;
+    
+    let sortedBPM = [...bpmHistory.slice(-25)].sort((a,b) => a-b);
+    let stableBPM = sortedBPM[Math.floor(sortedBPM.length / 2)];
+    currentStableBpm = stableBPM;
+
+    // Qui il soccorritore vede il numero
+    bpmEl.innerText = stableBPM;
+    
+    // Medico riceve lo stesso numero nello stesso momento
+    if (window.opener && stableBPM > 0) {
+        window.opener.postMessage({
+            type: 'BPM_SIGNAL',
+            value: centered,
+            bpmIst: stableBPM
+        }, window.location.origin);
+
+        if (frameCount % 20 === 0) {
+            debugLog(`BPM inviato al medico: ${stableBPM}`);
+        }
+    }
+    
+    let variance = bpmHistory.slice(-15).reduce((a, b) => a + Math.abs(b - stableBPM), 0) / 15;
+    
+    if (variance < 3.0) {
+        stabilityCount++;
+        if (frameCount % 20 === 0) debugLog(`Stabilità: ${stabilityCount}/${STABILITY_REQUIRED} (var:${variance.toFixed(2)})`);
+    } else {
+        stabilityCount = Math.max(0, stabilityCount - 1);
+    }
+    
+    progressBar.style.width = (stabilityCount / STABILITY_REQUIRED * 100) + "%";
+    
+    if (stabilityCount >= STABILITY_REQUIRED) {
+        finish(stableBPM);
+    }
+}
+
+function finish(finalBPM) {
+    debugLog(`finish() chiamato con BPM finale: ${finalBPM}`);
+    isStable = true; 
+    running = false;
+    statusEl.innerText = "Analisi Completata";
+    btnEl.innerText = "RIPETI";
+    container.classList.add("completed");
+    
+    if (window.opener) {
+        debugLog(`Invio BPM_FINAL con valore: ${finalBPM}`);
+        window.opener.postMessage({ type: 'BPM_FINAL', value: finalBPM }, window.location.origin);
+    } else {
+        debugLog("ATTENZIONE: window.opener null, impossibile inviare BPM_FINAL");
+    }
+    
+    setTimeout(() => {
+        releaseCamera();
+    }, 500);
+}
+
+function resetData() { 
+    signalBuffer = []; 
+    bpmHistory = []; 
+    stabilityCount = 0; 
+    progressBar.style.width = "0%"; 
+    bpmEl.innerText = "--"; 
+    frameCount = 0;
+    currentStableBpm = 0;
+}
+
+function drawGraph(data) {
+    gCtx.clearRect(0, 0, gCanvas.width, gCanvas.height);
+    if (data.length < 2) return;
+    
+    gCtx.strokeStyle = "#00ffcc"; 
+    gCtx.lineWidth = 3; 
+    gCtx.beginPath();
+    let max = Math.max(...data, 1);
+    let min = Math.min(...data, -1);
+    let range = max - min || 1;
+    
+    for(let i=0; i<data.length; i++) {
+        let x = (i / BUFFER_SIZE) * gCanvas.width;
+        let y = gCanvas.height - ((data[i] - min) / range) * gCanvas.height;
+        if(i === 0) gCtx.moveTo(x, y); 
+        else gCtx.lineTo(x, y);
+    }
+    gCtx.stroke();
+}
+
+function initCanvas() {
+    gCanvas.width = gCanvas.clientWidth;
+    gCanvas.height = gCanvas.clientHeight;
+}
+setTimeout(initCanvas, 100);
+window.addEventListener('resize', initCanvas);
+window.addEventListener('beforeunload', releaseCamera);
+
+console.log("[BIOMETRIA] Pagina caricata, window.opener:", window.opener ? "PRESENTE" : "NULL");
+debugLog("Pagina caricata - window.opener: " + (window.opener ? "PRESENTE" : "NULL"));
+</script>
+</body>
+</html>

@@ -1,0 +1,861 @@
+/* ============================================================
+   TELEEXPERT AR — Design System
+   Stile: Medical Dark Ops / High-Contrast Emergency UI
+   Font: Rajdhani (display) + DM Mono (dati)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+/* ── VARIABILI ─────────────────────────────────────────────── */
+:root {
+  --blue:        #0A84FF;
+  --blue-dim:    rgba(10, 132, 255, 0.18);
+  --blue-glow:   rgba(10, 132, 255, 0.45);
+  --green:       #30D158;
+  --green-dim:   rgba(48, 209, 88, 0.15);
+  --green-glow:  rgba(48, 209, 88, 0.4);
+  --red:         #FF453A;
+  --red-dim:     rgba(255, 69, 58, 0.18);
+  --red-glow:    rgba(255, 69, 58, 0.4);
+  --cyan:        #5AC8FA;
+  --cyan-dim:    rgba(90, 200, 250, 0.15);
+  --amber:       #FFD60A;
+
+  --dark-0:      #000000;
+  --dark-1:      #0a0c0f;
+  --dark-2:      #111418;
+  --dark-3:      #1a1f26;
+  --dark-4:      #242b35;
+
+  --glass-bg:    rgba(10, 14, 20, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-accent: rgba(10, 132, 255, 0.35);
+
+  --text-primary:   #F2F2F7;
+  --text-secondary: #8E8E93;
+  --text-dim:       #48484A;
+
+  --radius-sm:   8px;
+  --radius-md:   14px;
+  --radius-lg:   22px;
+  --radius-xl:   32px;
+
+  /* Compatibilità con variabili vecchie usate nel JSX */
+  --medical-blue:  var(--blue);
+  --medical-dark:  var(--dark-3);
+  --emergency-red: var(--red);
+  --medical-green: var(--green);
+}
+
+/* ── RESET BASE ─────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root, .App {
+  margin: 0;
+  padding: 0;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: 'Rajdhani', -apple-system, sans-serif;
+  color: var(--text-primary);
+}
+
+/* ── SFONDO PAGINA PRINCIPALE ───────────────────────────────── */
+.App {
+  background:
+    linear-gradient(
+      160deg,
+      rgba(0, 0, 0, 0.78) 0%,
+      rgba(5, 12, 22, 0.82) 50%,
+      rgba(0, 0, 0, 0.88) 100%
+    ),
+    url('/sfondo.jpeg') center center / cover no-repeat fixed;
+  position: relative;
+}
+
+.App::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── STATUS BAR ─────────────────────────────────────────────── */
+.status-bar {
+  position: relative;
+  z-index: 100;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(10, 132, 255, 0.3);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  box-shadow:
+    0 1px 0 0 rgba(10, 132, 255, 0.2),
+    0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.status-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  opacity: 0.6;
+}
+
+/* ── MAIN CONTENT ───────────────────────────────────────────── */
+.main-content {
+  height: calc(100dvh - 48px);
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── PAGINA INIZIALE — GLASS CARD ───────────────────────────── */
+.glass-card {
+  position: relative;
+  background: rgba(8, 12, 20, 0.75);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: 52px 44px 44px;
+  text-align: center;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 32px 80px rgba(0,0,0,0.7),
+    0 0 60px rgba(10, 132, 255, 0.06);
+  animation: cardReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes cardReveal {
+  from { opacity: 0; transform: translateY(24px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.glass-card h1 {
+  margin: 0 0 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 2.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #ffffff 30%, var(--cyan) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.glass-card h1::after {
+  content: 'Sistema Teleassistenza HD';
+  display: block;
+  font-size: 0.68rem;
+  font-family: 'DM Mono', monospace;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  color: var(--text-dim);
+  -webkit-text-fill-color: var(--text-dim);
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.glass-card::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  border-radius: 2px;
+  margin: 24px auto 28px;
+}
+
+/* ── BOTTONI PRINCIPALI (home) ──────────────────────────────── */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 16px 24px;
+  margin: 10px 0;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.btn:hover::before { opacity: 1; }
+.btn:active { transform: scale(0.97); }
+
+.btn-unlock {
+  background: linear-gradient(135deg, #0A84FF 0%, #0066cc 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(10, 132, 255, 0.35), 0 1px 0 rgba(255,255,255,0.12) inset;
+}
+.btn-unlock:hover {
+  box-shadow: 0 6px 28px rgba(10, 132, 255, 0.55), 0 1px 0 rgba(255,255,255,0.12) inset;
+  transform: translateY(-1px);
+}
+
+.btn-emergency {
+  background: linear-gradient(135deg, #FF453A 0%, #c0392b 100%);
+  color: white;
+  box-shadow: 0 4px 20px rgba(255, 69, 58, 0.35), 0 1px 0 rgba(255,255,255,0.12) inset;
+  animation: subtlePulse 2.4s ease-in-out infinite;
+}
+.btn-emergency:hover {
+  box-shadow: 0 6px 28px rgba(255, 69, 58, 0.55), 0 1px 0 rgba(255,255,255,0.12) inset;
+  transform: translateY(-1px);
+  animation: none;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 4px 20px rgba(255, 69, 58, 0.35); }
+  50%       { box-shadow: 0 4px 30px rgba(255, 69, 58, 0.6); }
+}
+
+.btn-cancel {
+  background: transparent;
+  color: var(--text-dim);
+  border: none;
+  cursor: pointer;
+  margin-top: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  padding: 8px;
+  transition: color 0.2s;
+}
+.btn-cancel:hover { color: var(--text-secondary); }
+
+/* ── AUTH BOX ────────────────────────────────────────────────── */
+.auth-box h3 {
+  color: var(--text-secondary);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 400;
+  margin: 0 0 4px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  margin: 14px 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border-accent);
+  background: rgba(10, 132, 255, 0.07);
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 1.4rem;
+  text-align: center;
+  letter-spacing: 0.3em;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+.auth-input:focus {
+  border-color: var(--blue);
+  background: rgba(10, 132, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.15);
+}
+.auth-input::placeholder { color: var(--text-dim); letter-spacing: 0.1em; font-size: 0.9rem; }
+
+/* ── VIDEO CONTAINER ─────────────────────────────────────────── */
+.video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--dark-0);
+}
+
+.video-full {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+/* ── VIDEO MEDICO ────────────────────────────────────────────── */
+.video-vertical-box {
+  position: relative !important;
+  width: 420px !important;
+  height: 750px !important;
+  max-width: 90vw;
+  max-height: 85vh;
+  background: #000;
+  border: 2px solid rgba(10, 132, 255, 0.4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(10, 132, 255, 0.1),
+    0 30px 80px rgba(0,0,0,0.9),
+    0 0 40px rgba(10, 132, 255, 0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: border-color 0.4s, box-shadow 0.4s;
+}
+
+.video-medical-inner {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  image-rendering: -webkit-optimize-contrast;
+  filter: brightness(1.05) contrast(1.08);
+  z-index: 5;
+}
+
+.video-vertical-box.frozen {
+  border-color: var(--cyan);
+  box-shadow:
+    0 0 0 1px rgba(90, 200, 250, 0.3),
+    0 30px 80px rgba(0,0,0,0.9),
+    0 0 50px rgba(90, 200, 250, 0.2);
+}
+
+/* ── CANVAS AR ───────────────────────────────────────────────── */
+.canvas-ar {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  cursor: crosshair;
+  touch-action: none;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ── OVERLAY CHIAMATA ENTRANTE ────────────────────────────────── */
+.call-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+}
+
+.call-box {
+  background: rgba(10, 14, 20, 0.9);
+  border: 1px solid rgba(255, 69, 58, 0.4);
+  border-radius: var(--radius-xl);
+  padding: 40px 36px;
+  text-align: center;
+  box-shadow: 0 0 60px rgba(255, 69, 58, 0.15), 0 20px 60px rgba(0,0,0,0.8);
+}
+
+.call-box h2 {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  margin: 0 0 20px;
+  animation: flashAlert 1s ease-in-out infinite;
+}
+
+@keyframes flashAlert {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── OVERLAY CONTROLS (SOCCORRITORE) ─────────────────────────── */
+.overlay-controls {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+.overlay-controls button { pointer-events: auto; }
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.big-btn-mobile {
+  padding: 20px 44px;
+  background: linear-gradient(135deg, var(--red) 0%, #c0392b 100%);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 6px 30px rgba(255, 69, 58, 0.4),
+    0 1px 0 rgba(255,255,255,0.12) inset;
+  animation: pulse-red 2.2s ease-in-out infinite;
+  transition: all 0.2s;
+}
+.big-btn-mobile:hover {
+  animation: none;
+  transform: scale(1.04);
+  box-shadow: 0 8px 40px rgba(255, 69, 58, 0.6);
+}
+
+@keyframes pulse-red {
+  0%, 100% { transform: scale(1);    box-shadow: 0 6px 30px rgba(255,69,58,0.4); }
+  50%       { transform: scale(1.03); box-shadow: 0 8px 40px rgba(255,69,58,0.6); }
+}
+
+.btn-termina-mini {
+  background: rgba(255, 69, 58, 0.85);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 12px 22px;
+  border-radius: 50px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(8px);
+}
+.btn-termina-mini:hover {
+  background: var(--red);
+  box-shadow: 0 4px 20px rgba(255,69,58,0.5);
+}
+
+/* ── SOCCORRITORE — MIC (piccolo, in controls-row) ───────────── */
+.btn-mic {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: rgba(10, 14, 20, 0.8);
+  backdrop-filter: blur(12px);
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.18s;
+  color: var(--text-secondary);
+}
+.mic-on  {
+  color: var(--green);
+  border-color: rgba(48, 209, 88, 0.35);
+  background: rgba(48, 209, 88, 0.1);
+}
+.mic-off {
+  color: var(--red);
+  border-color: rgba(255, 69, 58, 0.35);
+  background: rgba(255, 69, 58, 0.1);
+}
+.btn-mic:hover { transform: scale(1.06); filter: brightness(1.15); }
+
+/* ── SIDEBAR CONTROLLI MEDICO ────────────────────────────────── */
+.medical-controls-sidebar {
+  position: fixed;
+  right: 20px;
+  top: 45%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2500;
+}
+
+/* ── TOOL SELECTOR ───────────────────────────────────────────── */
+.tool-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: rgba(10, 14, 20, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  margin-bottom: 8px;
+  width: 52px;
+}
+
+.btn-tool {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+.btn-tool:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+.btn-tool.active {
+  background: var(--blue-dim);
+  border-color: rgba(10, 132, 255, 0.5);
+  color: var(--blue);
+}
+
+/* ── SIDEBAR ACTION BUTTONS (Ghiaccia / Pulisci / Termina) ───── */
+.btn-sidebar-action {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: rgba(10, 14, 20, 0.75);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  color: var(--text-secondary);
+}
+
+/* icona emoji dentro btn-sidebar-action */
+.btn-sidebar-action > span:first-child {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* etichetta testo sotto l'icona */
+.btn-sidebar-action > span:last-child {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.5rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.btn-sidebar-action:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--text-primary);
+  transform: translateX(-2px);
+}
+.btn-sidebar-action:active { transform: scale(0.95); }
+
+.btn-sidebar-action.ghiaccia {
+  color: var(--cyan);
+}
+.btn-sidebar-action.ghiaccia:hover {
+  background: rgba(90, 200, 250, 0.12);
+  border-color: rgba(90, 200, 250, 0.3);
+}
+
+.btn-sidebar-action.pulisci {
+  color: var(--blue);
+}
+.btn-sidebar-action.pulisci:hover {
+  background: var(--blue-dim);
+  border-color: rgba(10, 132, 255, 0.3);
+}
+
+.btn-sidebar-action.termina {
+  color: var(--red);
+}
+.btn-sidebar-action.termina:hover {
+  background: var(--red-dim);
+  border-color: rgba(255, 69, 58, 0.3);
+}
+
+/* ── FLOATING BUTTONS — Mic medico e Chat toggle ─────────────── */
+.btn-mic-medico,
+.chat-toggle-btn {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--glass-border) !important;
+  background: rgba(10, 14, 20, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition: all 0.18s !important;
+  box-shadow: none !important;
+}
+
+/* Posizionamento fixed (invariato rispetto al vecchio) */
+.btn-mic-medico {
+  position: fixed;
+  right: 20px;
+  bottom: 30px !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: 2000;
+}
+
+.chat-toggle-btn {
+  position: fixed !important;
+  right: 20px !important;
+  bottom: 84px !important;
+  top: auto !important;
+  transform: none !important;
+  z-index: 2000;
+}
+
+/* Stati mic medico */
+.mic-medico-on {
+  color: var(--green) !important;
+  border-color: rgba(48, 209, 88, 0.35) !important;
+  background: rgba(48, 209, 88, 0.1) !important;
+}
+.mic-medico-off {
+  color: var(--red) !important;
+  border-color: rgba(255, 69, 58, 0.35) !important;
+  background: rgba(255, 69, 58, 0.1) !important;
+}
+
+/* Stato chat toggle */
+.chat-toggle-btn {
+  color: var(--blue) !important;
+  border-color: rgba(10, 132, 255, 0.35) !important;
+  background: rgba(10, 132, 255, 0.1) !important;
+}
+
+.btn-mic-medico:hover,
+.chat-toggle-btn:hover {
+  transform: scale(1.06) !important;
+  filter: brightness(1.15) !important;
+}
+
+/* ── PANNELLO CHAT MEDICO ────────────────────────────────────── */
+.chat-sidebar-overlay {
+  position: absolute;
+  right: 90px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 300px;
+  height: 500px;
+  background: rgba(8, 12, 20, 0.92);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border-accent);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  z-index: 1999;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 30px rgba(10,132,255,0.08);
+}
+
+.chat-history {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dark-4) transparent;
+}
+
+.chat-msg-item {
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  border-left: 2px solid var(--blue);
+}
+
+.chat-input-group {
+  display: flex;
+  gap: 6px;
+}
+
+.chat-input-field {
+  flex-grow: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.chat-input-field:focus { border-color: var(--blue); }
+.chat-input-field::placeholder { color: var(--text-dim); }
+
+/* ── CHECKLIST ────────────────────────────────────────────────── */
+.checklist-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.checklist-item:hover { background: rgba(255,255,255,0.06); }
+.checklist-item.completed {
+  background: var(--green-dim);
+  border-color: rgba(48, 209, 88, 0.3);
+}
+.checklist-item.completed span { text-decoration: line-through; opacity: 0.6; }
+.checklist-item input { transform: scale(1.2); cursor: pointer; accent-color: var(--green); }
+
+/* ── CHAT SOCCORRITORE ────────────────────────────────────────── */
+.chat-overlay-soccorritore {
+  position: absolute;
+  bottom: 110px;
+  left: 20px;
+  width: 260px;
+  max-height: 340px;
+  background: rgba(8, 12, 20, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  z-index: 3000;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+}
+
+.chat-history-soccorritore {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.msg-item-soccorritore {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.76rem;
+  color: white;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  border-left: 2px solid var(--green);
+}
+
+.chat-toggle-soccorritore {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 44px;
+  height: 44px;
+  background: rgba(10, 14, 20, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(48, 209, 88, 0.35);
+  border-radius: 50%;
+  color: var(--green);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.05rem;
+  z-index: 3001;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.chat-toggle-soccorritore:hover {
+  transform: scale(1.06);
+  filter: brightness(1.15);
+}
+
+.badge-soccorritore {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--red);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(255,69,58,0.5);
+}
+
+/* ── NASCONDI VECCHIO ACTIONS ROW ────────────────────────────── */
+.medical-actions-row { display: none !important; }
+.float-end-medical   { display: none !important; }
+
+/* ── ANIMAZIONI GLOBALI ──────────────────────────────────────── */
+@keyframes bpmPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.82); }
+}
+
+@keyframes bpmNumPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.72; }
+}
+
+/* ── SCROLLBAR GLOBALE ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--dark-4); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }

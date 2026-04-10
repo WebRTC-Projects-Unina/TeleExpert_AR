@@ -6,10 +6,10 @@
 
 ## Architettura del Sistema 🏗️
 Il progetto implementa un’**architettura client-server** in cui un soccorritore sul campo può trasmettere il flusso video della fotocamera del proprio smartphone a un medico remoto, consentendo un supporto operativo immediato durante situazioni di emergenza.
-<p align="center">
-<img width="500" height="370" alt="image" src="https://github.com/user-attachments/assets/8605adc7-4524-4919-b569-1cb3ea5181e6" />
-</p>
 
+<p align="center">
+  <img src="frontend/src/assets/structure.png" alt="Architettura" width="450">
+</p>
 
 ### Comunicazione Real-Time
 La comunicazione tra i dispositivi avviene tramite il protocollo **WebRTC**, che permette la trasmissione diretta di flussi audio e video con **bassa latenza**.  
@@ -18,8 +18,9 @@ Per consentire l’instaurazione della connessione tra i client è stato realizz
 
 ## Funzionalità Avanzate 🧬
 Oltre alla trasmissione video, il sistema è stato progettato per supportare funzionalità avanzate di **monitoraggio e collaborazione remota**. In particolare, il progetto prevede l’estrazione di **parametri biometrici**, come il battito cardiaco, direttamente dal flusso video attraverso tecniche di **fotopletismografia (PPG)**, consentendo l’analisi in tempo reale di segnali fisiologici senza l’utilizzo di sensori esterni dedicati.  
+
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/6ac4bec3-2d1b-4645-b620-788c0e351e70" width="200" alt="TeleExpertAR Workspace">
+  <img src="frontend/src/assets/BPM_1.jpeg" alt="BPM" width="200">
 </p>
 
 L’**architettura modulare** del sistema consente inoltre l’integrazione di componenti avanzati, come un **media server WebRTC** per la gestione scalabile dei flussi multimediali e sistemi di **realtà aumentata collaborativa** per guidare visivamente le operazioni del soccorritore.  

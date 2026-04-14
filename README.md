@@ -41,11 +41,6 @@ La piattaforma è ottimizzata per diverse modalità di accesso a seconda del ruo
 * **Medico (Centrale Remota):** L'accesso deve avvenire tramite **PC/Laptop** utilizzando un browser (Chrome, Edge o Firefox). L'interfaccia desktop permette una visualizzazione dettagliata del flusso video e dei parametri biometrici analizzati.
 * **Soccorritore (Sul Campo):** L'accesso deve avvenire tramite **Smartphone**. Una volta autorizzato l'accesso alla fotocamera, il sistema inizierà a trasmettere il flusso video e i dati biometrici alla centrale remota.
 
-## WebSite 🌐
-Per visualizzare il sito, cliccare al seguente link:
-[Website](https://teleexpert.duckdns.org/)
-
-
 ## Licenza
 Questo progetto è distribuito sotto la **Licenza MIT**. Consulta il file [LICENSE](LICENSE) per ulteriori dettagli.
 
